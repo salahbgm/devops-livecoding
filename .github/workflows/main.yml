@@ -24,4 +24,4 @@ jobs:
 
       # Étape 3 : Construction et tests avec Maven
       - name: Build and test with Maven
-        working-directory: /Users/salahboughanmi/devops-livecoding/simple-api/src/test
+        working-directory: devops-livecoding/simple-api
