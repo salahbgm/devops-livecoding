@@ -1,5 +1,6 @@
 name: CI devops 2024
 on:
+  # Lancement du pipeline sur les branches main et develop
   push:
     branches:
       - main
@@ -27,26 +28,39 @@ jobs:
         working-directory: ./simple-api
 
   build-and-push-docker-image:
-    needs: test-backend
+    needs: test-backend  # Exécute ce job après que les tests du backend soient réussis
     runs-on: ubuntu-22.04
     steps:
-      # Étape 1 : Checkout du code source
-      - name: Checkout code
+      # Étape 1 : Checkout du code
+      - name: Checkout repository
         uses: actions/checkout@v2.5.0
 
       # Étape 2 : Connexion à Docker Hub
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Login to DockerHub
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Étape 3 : Construire l'image Docker et la publier
-      - name: Build and push backend image
+      # Étape 3 : Construction de l'image et publication sur Docker Hub
+      - name: Build image and push backend
         uses: docker/build-push-action@v3
         with:
+          # Chemin relatif vers le dossier contenant le Dockerfile
           context: ./simple-api
+          # Tag pour l'image Docker (notez que le tag doit être en minuscules)
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-simple-api:latest
+          # Ne pousser l'image que si nous sommes sur la branche main
+          push: ${{ github.ref == 'refs/heads/main' }}
 
- 
+      # Si vous avez d'autres images à construire (par exemple pour la base de données ou le serveur HTTP), vous pouvez ajouter des étapes similaires :
+      - name: Build image and push database
+        uses: docker/build-push-action@v3
+        with:
+          context: ./database  # Répertoire de l'image de la base de données
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-database:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
 
+      - name: Build image and push httpd
+        uses: docker/build-push-action@v3
+        with:
+          context: ./httpd  # Répertoire pour le serveur HTTP
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-httpd:latest
+          push: ${{ github.ref == 'refs/heads/main' }}
