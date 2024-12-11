@@ -25,4 +25,4 @@ jobs:
       # Étape 3 : Construction et tests avec Maven
       - name: Build and test with Maven
         run: mvn clean install
-        working-directory: simple-api/pom.xml
+        working-directory: ./simple-api
