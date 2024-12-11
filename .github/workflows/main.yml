@@ -12,47 +12,51 @@ jobs:
   test-backend:
     runs-on: ubuntu-22.04
     steps:
-      # Checkout your GitHub code using actions/checkout@v2.5.0
+      # Étape 1 : Checkout du code source
       - name: Checkout repository
         uses: actions/checkout@v2.5.0
 
-      # Set up JDK 17 using actions/setup-java@v3
+      # Étape 2 : Configuration de JDK 17
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "17"
 
-      # Build and test your app with Maven
-      - name: Build and test with Maven
-        run: mvn -B package --file pom.xml
+      # Étape 3 : Analyse avec Maven et SonarCloud
+      - name: Build, test, and analyze with SonarCloud
+        run: mvn -B verify sonar:sonar \
+          -Dsonar.projectKey=devops-livecoding \
+          -Dsonar.organization=salahbgm \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+          --file ./simple-api/pom.xml
         working-directory: ./simple-api
 
-  # Define job to build and publish docker image
   build-and-push-docker-image:
     needs: test-backend
     # Run only when code is compiling and tests are passing
     runs-on: ubuntu-22.04
 
-
     # Steps to perform in job
     steps:
+      # Étape 1 : Checkout du code source
       - name: Checkout code
         uses: actions/checkout@v2.5.0
 
+      # Étape 2 : Connexion à Docker Hub
       - name: Login to DockerHub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Étape 3 : Construction et publication de l'image backend
       - name: Build image and push backend
         uses: docker/build-push-action@v3
         with:
-          # Relative path to the place where source code with Dockerfile is located
           context: ./simple-api
-          # Note: tags has to be all lower-case
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-simple-api:latest
-          # Build on feature branches, push only on main branch
           push: ${{ github.ref == 'refs/heads/main' }}
 
+      # Étape 4 : Construction et publication de l'image base de données
       - name: Build image and push database
         uses: docker/build-push-action@v3
         with:
@@ -60,6 +64,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/tp-devops-database:latest
           push: ${{ github.ref == 'refs/heads/main' }}
 
+      # Étape 5 : Construction et publication de l'image serveur HTTP
       - name: Build image and push httpd
         uses: docker/build-push-action@v3
         with:
