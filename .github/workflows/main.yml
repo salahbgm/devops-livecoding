@@ -25,13 +25,12 @@ jobs:
 
       # Étape 3 : Analyse avec Maven et SonarCloud
       - name: Build, test, and analyze with SonarCloud
-        run: mvn -B verify sonar:sonar \
-          -Dsonar.projectKey=devops-livecoding \
-          -Dsonar.organization=salahbgm \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-          --file ./simple-api/pom.xml
         working-directory: ./simple-api
+        run: mvn -B verify sonar:sonar \
+            -Dsonar.projectKey=devops-livecoding \
+            -Dsonar.organization=salahbgm \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
 
   build-and-push-docker-image:
     needs: test-backend
