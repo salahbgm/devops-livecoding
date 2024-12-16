@@ -1,0 +1,9 @@
+---
+# playbook.yml
+
+- hosts: all
+  gather_facts: true
+  become: true
+
+  roles:
+    - docker

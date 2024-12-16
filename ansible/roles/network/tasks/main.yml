@@ -1,0 +1,7 @@
+# roles/network/tasks/main.yml
+
+- name: Create Docker network
+  docker_network:
+    name: my_network
+    driver: bridge
+    state: present
